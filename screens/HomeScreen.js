@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 
 import { Container } from 'native-base';
-
+import { connect } from 'react-redux';
+import { getDogs } from '../store/index';
 import { MonoText } from '../components/StyledText';
-
 import { Auth } from '../server/auth';
 
-export default function HomeScreen() {
+function HomeScreen() {
   return (
     <Container>
     <View style={styles.container}>
@@ -28,7 +28,7 @@ export default function HomeScreen() {
 
 
           <Text style={styles.getStartedText}>
-            Hello World!
+            Welcome to Doggie Book
           </Text>
 
         </View>
@@ -37,7 +37,7 @@ export default function HomeScreen() {
 
       </ScrollView>
 
-      <View style={styles.tabBarInfoContainer}>
+      {/* <View style={styles.tabBarInfoContainer}>
         <Text style={styles.tabBarInfoText}>
           This is a tab bar. You can edit it in:
         </Text>
@@ -48,7 +48,7 @@ export default function HomeScreen() {
             navigation/MainTabNavigator.js
           </MonoText>
         </View>
-      </View>
+      </View> */}
     </View>
     </Container>
   );
@@ -58,40 +58,50 @@ HomeScreen.navigationOptions = {
   header: null,
 };
 
-function DevelopmentModeNotice() {
-  if (__DEV__) {
-    const learnMoreButton = (
-      <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
-        Learn more
-      </Text>
-    );
-
-    return (
-      <Text style={styles.developmentModeText}>
-        Development mode is enabled: your app will be slower but you can use
-        useful development tools. {learnMoreButton}
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={styles.developmentModeText}>
-        You are not in development mode: your app will run at full speed.
-      </Text>
-    );
-  }
+const mapStateToProps = (state) => {
+  let dogs = state.dogs;
+  return { dogs };
 }
 
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/development-mode/'
-  );
-}
+const mapDispatchToProps = dispatch => {
+  return { getDogs: () => dispatch(getDogs()) };
+};
 
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes'
-  );
-}
+
+// function DevelopmentModeNotice() {
+//   if (__DEV__) {
+//     const learnMoreButton = (
+//       <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
+//         Learn more
+//       </Text>
+//     );
+
+//     return (
+//       <Text style={styles.developmentModeText}>
+//         Development mode is enabled: your app will be slower but you can use
+//         useful development tools. {learnMoreButton}
+//       </Text>
+//     );
+//   } else {
+//     return (
+//       <Text style={styles.developmentModeText}>
+//         You are not in development mode: your app will run at full speed.
+//       </Text>
+//     );
+//   }
+// }
+
+// function handleLearnMorePress() {
+//   WebBrowser.openBrowserAsync(
+//     'https://docs.expo.io/versions/latest/workflow/development-mode/'
+//   );
+// }
+
+// function handleHelpPress() {
+//   WebBrowser.openBrowserAsync(
+//     'https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes'
+//   );
+// }
 
 const styles = StyleSheet.create({
   container: {
@@ -181,3 +191,5 @@ const styles = StyleSheet.create({
     color: '#2e78b7',
   },
 });
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

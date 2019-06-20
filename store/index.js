@@ -63,11 +63,11 @@ export const getDogsAction = (dogs) => ({type: GET_DOGS, dogs});
 //   };
 // };
 
-// export const getDogs = () => {
-//   return  (dispatch) => {
-//       dispatch(getDogsAction(initialState.dogs.all))
-//    }
-// };
+export const getDogs = () => {
+  return  (dispatch) => {
+      dispatch(getDogsAction(initialState.dogs.all))
+   }
+};
 
 //reducer
 
