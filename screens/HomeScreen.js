@@ -17,6 +17,7 @@ import { connect } from 'react-redux';
 import { getDogs } from '../store/index';
 import { MonoText } from '../components/StyledText';
 import Auth from '../components/auth';
+import Dogs from '../components/Dogs';
 
 function HomeScreen(props) {
   useEffect(() => {
@@ -42,7 +43,7 @@ console.log(props.dogs);
 
         </View>
 
-        <Button
+        {/* <Button
         style = {{marginTop: 10}}
         full
         rounded
@@ -50,8 +51,12 @@ console.log(props.dogs);
         onPress = {() => {props.getDogs()}}
       >
         <Text>Get Dogs</Text>
-      </Button>
-
+      </Button> */}
+      {props.dogs.reverse().map((el) => {
+        return (
+          <Dogs key={el.id} profile={el} />
+        );
+      })}
       </ScrollView>
 
       {/* <View style={styles.tabBarInfoContainer}>
