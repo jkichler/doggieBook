@@ -2,12 +2,24 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import firebase from 'firebase';
 import { firebaseConfig } from '../configs/fireBase';
+import * as Facebook from 'expo-facebook';
+import { db } from '../server/db';
 
-firebase.initializeApp(firebaseConfig);
+import {Platform} from 'react-native'
+
+// Use this to fix bug with Expo and firebase
+//expo-web is inspired or based on react-native-web
+// which introduces a 'web' as platform value
+if (Platform.OS !== 'web') {
+  window = undefined
+}
+
+
+//firebase.initializeApp(firebaseConfig);
 
 export const initialState = {
-  email: '',
-  password: '',
+  user: {},
+  loggedIn: false,
   dogs: []
 };
 
@@ -52,7 +64,7 @@ const LOGGED_IN = 'LOGGED_IN';
 
 export const gotDogs = (dogs) => ({type: GOT_DOGS, dogs});
 export const signedUp = (email, password) =>({type: SIGNED_UP, email, password});
-export const loggedIn = (email, password) =>({type: LOGGED_IN, email, password});
+export const loggedIn = (user) =>({type: LOGGED_IN, user});
 
 //thunks
 
@@ -77,7 +89,8 @@ export const getDogs = () => {
 export const signUp = (email, password) => {
   return async (dispatch) => {
     try {
-    await firebase.auth().createUserWithEmailAndPassword(email, password);
+    let { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    db.collection('dogs').doc(user.uid).set({name: 'test name'});
     dispatch(signedUp(email, password));
   } catch (error) {
     console.error(error);
@@ -96,14 +109,58 @@ export const signUp = (email, password) => {
 // };
 
 export const login = (email, password) => {
-  return (dispatch) => {
+  return async (dispatch) => {
     try {
-    dispatch(loggedIn(email, password));
+    const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
+    const docRef = db.collection('dogs').doc(user.uid);
+    docRef.get().then(function(doc) {
+      if (doc.exists) {
+        let data = doc.data();
+        dispatch(loggedIn(data));
+      } else {
+        console.log('document does not exist')
+      }
+    });
   } catch (error) {
     console.error(error);
   }
 };
 };
+
+export const loginWithFacebook = () => {
+  return async (dispatch) => {
+    try {
+      const { type, token } = await Facebook.logInWithReadPermissionsAsync(
+        '2085186958442224',
+        { permissions: ['public_profile'] }
+        );
+      if (type === 'success') {
+        alert('success');
+        const credential = await firebase.auth.FacebookAuthProvider.credential(token);
+
+        firebase
+          .auth()
+          .signInWithCredential(credential)
+          const user = firebase.auth().currentUser;
+          const docRef = db.collection('dogs').doc(user.uid);
+          docRef.get().then(function(doc) {
+            if (doc.exists) {
+              let data = doc.data();
+              dispatch(loggedIn(data));
+            } else {
+              db.collection('dogs').doc(user.uid).set({name: 'facebook test'});
+            }
+          });
+
+
+          if (user) dispatch(loggedIn(user));
+    }
+  } catch (error) {
+      console.error(error);
+    }
+  }
+}
+
 
 //reducer
 
@@ -111,23 +168,20 @@ const reducer = (state = initialState, action) => {
   const newState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
     case GOT_DOGS:
-      console.log('***************** got it from dogs reducer');
       newState.dogs.all = action.dogs;
-      break;
+      return newState;
     case SIGNED_UP:
-      console.log('******* signed up in reducer');
       newState.email = action.email;
       newState.password = action.password;
-      break;
+      return newState;
       case LOGGED_IN:
-          console.log('******* login in reducer');
-          newState.email = action.email;
-          newState.password = action.password;
-          break;
+          newState.user = action.user;
+          newState.loggedIn = true;
+          return newState;
     default:
       break;
   }
-  return newState;
+  return state;
 };
 
 const store = createStore(  //creates store and attaches middleware (logger and devtools)

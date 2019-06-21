@@ -14,7 +14,7 @@ import { Container } from 'native-base';
 import { connect } from 'react-redux';
 import { getDogs } from '../store/index';
 import { MonoText } from '../components/StyledText';
-import Auth from '../server/auth';
+import Auth from '../components/auth';
 
 function HomeScreen(props) {
   useEffect(() => {

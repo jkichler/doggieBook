@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import {
   Container, Content, Header, Form, Input, Item, Button, Label
 } from 'native-base';
-import { signUp, login } from '../store';
+import { signUp, login, loginWithFacebook } from '../store';
 import { connect } from 'react-redux';
 
 // make an on change handler with a given stter
@@ -58,6 +58,16 @@ const Auth = (props) => {
         <Text>Sign Up</Text>
       </Button>
 
+      <Button
+        style = {{marginTop: 10}}
+        full
+        rounded
+        primary
+        onPress = {() => {props.loginWithFacebook()}}
+      >
+        <Text>Login with Facebook</Text>
+      </Button>
+
     </Form>
   )
 }
@@ -70,7 +80,8 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = dispatch => {
-  return { signUp: (email, password) => dispatch(signUp(email, password)), login: (email, password) => dispatch(login(email, password)) };
+  return { signUp: (email, password) => dispatch(signUp(email, password)), login: (email, password) => dispatch(login(email, password)),
+  loginWithFacebook: () => dispatch(loginWithFacebook()) };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Auth);
