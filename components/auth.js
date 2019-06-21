@@ -1,11 +1,12 @@
 /* eslint-disable semi */
 import React, {useEffect, useState}  from 'react';
-import { Text } from 'react-native';
+import { Text, ScrollView } from 'react-native';
 import {
   Container, Content, Header, Form, Input, Item, Button, Label
 } from 'native-base';
 import { signUp, login, loginWithFacebook } from '../store';
 import { connect } from 'react-redux';
+
 
 // make an on change handler with a given stter
 // will take the event and call the setter with that target's value
@@ -16,6 +17,7 @@ const Auth = (props) => {
   const [password, setPassword] = useState(props.password);
 
   return (
+    <ScrollView>
     <Form>
       <Item floatingLabel>
         <Label>Email:</Label>
@@ -69,6 +71,7 @@ const Auth = (props) => {
       </Button>
 
     </Form>
+    </ScrollView>
   )
 }
 

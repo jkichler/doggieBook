@@ -11,16 +11,26 @@ import {Platform} from 'react-native'
 //expo-web is inspired or based on react-native-web
 // which introduces a 'web' as platform value
 if (Platform.OS !== 'web') {
-  window = undefined
+  // eslint-disable-next-line no-native-reassign
+  window = undefined;
 }
 
 
 //firebase.initializeApp(firebaseConfig);
 
 export const initialState = {
-  user: {},
-  loggedIn: false,
-  dogs: []
+  user: {
+    name: '',
+    age: 0,
+    breed: '',
+    imgUrl: 'https://cdn1.medicalnewstoday.com/content/images/articles/322/322868/golden-retriever-puppy.jpg',
+    owner: '',
+    email: '',
+    password: '',
+    walking: false,
+    loggedIn: false
+  },
+  dogs: [],
 };
 
 const fakeDogs = {
@@ -81,17 +91,29 @@ export const loggedIn = (user) =>({type: LOGGED_IN, user});
 // };
 
 export const getDogs = () => {
-  return  (dispatch) => {
-      dispatch(gotDogs(fakeDogs))
+  return async (dispatch) => {
+    try {
+      const docRef = db.collection('dogs');
+      const query = await docRef.where('walking', '==', true);
+      let dogs = [];
+      query.get().then(function(querySnapshot){
+        querySnapshot.forEach(function (doc){
+          dogs.push(doc.data());
+        })
+        dispatch(gotDogs(dogs))
+      })
+    } catch (error) {
+      console.error(error);
+    }
    }
 };
 
-export const signUp = (email, password) => {
+export const signUp = (userData, password) => {
   return async (dispatch) => {
     try {
-    let { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
-    db.collection('dogs').doc(user.uid).set({name: 'test name'});
-    dispatch(signedUp(email, password));
+    let { user } = await firebase.auth().createUserWithEmailAndPassword(userData.email, password);
+    db.collection('dogs').doc(user.uid).set(userData);
+    dispatch(signedUp(userData));
   } catch (error) {
     console.error(error);
   }
@@ -168,7 +190,7 @@ const reducer = (state = initialState, action) => {
   const newState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
     case GOT_DOGS:
-      newState.dogs.all = action.dogs;
+      newState.dogs = action.dogs;
       return newState;
     case SIGNED_UP:
       newState.email = action.email;

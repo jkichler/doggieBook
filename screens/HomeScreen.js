@@ -1,5 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   Platform,
@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {
+  Container, Content, Header, Form, Input, Item, Button, Label
+} from 'native-base';
 
-import { Container } from 'native-base';
 import { connect } from 'react-redux';
 import { getDogs } from '../store/index';
 import { MonoText } from '../components/StyledText';
@@ -20,6 +22,9 @@ function HomeScreen(props) {
   useEffect(() => {
     props.getDogs();
   }, []);
+
+//const [dogs, setDogs] = useState(props.dogs);
+console.log(props.dogs);
 
   return (
     <Container>
@@ -37,7 +42,15 @@ function HomeScreen(props) {
 
         </View>
 
-          <Auth />
+        <Button
+        style = {{marginTop: 10}}
+        full
+        rounded
+        primary
+        onPress = {() => {props.getDogs()}}
+      >
+        <Text>Get Dogs</Text>
+      </Button>
 
       </ScrollView>
 
