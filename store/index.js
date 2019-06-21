@@ -1,9 +1,18 @@
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
+import firebase from 'firebase';
+import { firebaseConfig } from '../configs/fireBase';
+
+firebase.initializeApp(firebaseConfig);
 
 export const initialState = {
-  dogs: {
-    all: [
+  email: '',
+  password: '',
+  dogs: []
+};
+
+const fakeDogs = {
+  dogs:  [
       {
         id: '1',
         name: 'Milly',
@@ -32,22 +41,18 @@ export const initialState = {
         breed: 'Blue Healer',
         img: 'https://cdn1.medicalnewstoday.com/content/images/articles/322/322868/golden-retriever-puppy.jpg'
       }
-    ],
-    selected: {},
-    error: false
-  },
-  owners: {
-    all: [],
-    selected: {},
-    error: false
-  }
-};
+    ]
+  };
 
-const GET_DOGS = 'GET_DOGS';
+const GOT_DOGS = 'GOT_DOGS';
+const SIGNED_UP = 'SIGNED_UP';
+const LOGGED_IN = 'LOGGED_IN';
 
 //action creator
 
-export const getDogsAction = (dogs) => ({type: GET_DOGS, dogs});
+export const gotDogs = (dogs) => ({type: GOT_DOGS, dogs});
+export const signedUp = (email, password) =>({type: SIGNED_UP, email, password});
+export const loggedIn = (email, password) =>({type: LOGGED_IN, email, password});
 
 //thunks
 
@@ -56,7 +61,7 @@ export const getDogsAction = (dogs) => ({type: GET_DOGS, dogs});
 //    try {
 //       let dogData = await axios.get('http://192.168.22.10:9999/api/dogs');
 //       console.log(dogData)
-//       dispatch(getDogsAction(initialState.dogs.all))
+//       dispatch(gotDogs(initialState.dogs.all))
 //     } catch (err) {
 //      console.error(err);
 //    }
@@ -65,8 +70,39 @@ export const getDogsAction = (dogs) => ({type: GET_DOGS, dogs});
 
 export const getDogs = () => {
   return  (dispatch) => {
-      dispatch(getDogsAction(initialState.dogs.all))
+      dispatch(gotDogs(fakeDogs))
    }
+};
+
+export const signUp = (email, password) => {
+  return async (dispatch) => {
+    try {
+    await firebase.auth().createUserWithEmailAndPassword(email, password);
+    dispatch(signedUp(email, password));
+  } catch (error) {
+    console.error(error);
+  }
+};
+};
+
+// export const signUp = (email, password) => {
+//   return (dispatch) => {
+//     try {
+//     dispatch(signedUp(email, password));
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+// };
+
+export const login = (email, password) => {
+  return (dispatch) => {
+    try {
+    dispatch(loggedIn(email, password));
+  } catch (error) {
+    console.error(error);
+  }
+};
 };
 
 //reducer
@@ -74,10 +110,20 @@ export const getDogs = () => {
 const reducer = (state = initialState, action) => {
   const newState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
-    case GET_DOGS:
+    case GOT_DOGS:
       console.log('***************** got it from dogs reducer');
       newState.dogs.all = action.dogs;
       break;
+    case SIGNED_UP:
+      console.log('******* signed up in reducer');
+      newState.email = action.email;
+      newState.password = action.password;
+      break;
+      case LOGGED_IN:
+          console.log('******* login in reducer');
+          newState.email = action.email;
+          newState.password = action.password;
+          break;
     default:
       break;
   }

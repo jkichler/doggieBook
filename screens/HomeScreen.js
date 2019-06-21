@@ -1,5 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Image,
   Platform,
@@ -14,9 +14,13 @@ import { Container } from 'native-base';
 import { connect } from 'react-redux';
 import { getDogs } from '../store/index';
 import { MonoText } from '../components/StyledText';
-import { Auth } from '../server/auth';
+import Auth from '../server/auth';
 
-function HomeScreen() {
+function HomeScreen(props) {
+  useEffect(() => {
+    props.getDogs();
+  }, []);
+
   return (
     <Container>
     <View style={styles.container}>
@@ -60,7 +64,9 @@ HomeScreen.navigationOptions = {
 
 const mapStateToProps = (state) => {
   let dogs = state.dogs;
-  return { dogs };
+  let email = state.email;
+  let password = state.password;
+  return { dogs, email, password };
 }
 
 const mapDispatchToProps = dispatch => {
