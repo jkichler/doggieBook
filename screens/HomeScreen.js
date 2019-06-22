@@ -50,7 +50,7 @@ console.log(props.dogs);
         primary
         onPress = {() => {props.getDogs()}}
       >
-        <Text>Get Dogs</Text>
+        <Text>Get Dogs</Text>\
       </Button> */}
       {props.dogs.reverse().map((el) => {
         return (

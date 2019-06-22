@@ -98,9 +98,12 @@ export const getDogs = () => {
       let dogs = [];
       query.get().then(function(querySnapshot){
         querySnapshot.forEach(function (doc){
-          dogs.push(doc.data());
+          let dog = doc.data();
+          dog.id = doc.id;
+          dogs.push(dog);
         })
-        dispatch(gotDogs(dogs))
+        console.log(dogs);
+        dispatch(gotDogs(dogs));
       })
     } catch (error) {
       console.error(error);
