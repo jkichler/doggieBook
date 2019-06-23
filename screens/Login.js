@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 // will take the event and call the setter with that target's value
 
 const Login = (props) => {
+  console.log('props:', props.navigation)
 
   const [email, setEmail] = useState(props.email);
   const [password, setPassword] = useState(props.password);
@@ -39,7 +40,16 @@ const Login = (props) => {
         full
         rounded
         success
-        onPress = {() => {props.login(email, password)}}
+        onPress = {() =>  {if (email === undefined) {
+          alert('Please enter an email address')
+        }  else
+          {props.login(email, password)
+           props.navigation.navigate('Home')
+          }
+
+        }
+
+        }
       >
         <Text>Login</Text>
       </Button>
@@ -49,7 +59,10 @@ const Login = (props) => {
         full
         rounded
         primary
-        onPress = {() => {props.loginWithFacebook()}}
+        onPress = {() => {
+          props.loginWithFacebook()
+          props.navigation.navigate('Home')
+        }}
       >
         <Text>Login with Facebook</Text>
       </Button>

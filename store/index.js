@@ -5,6 +5,10 @@ import { firebaseConfig } from '../configs/fireBase';
 import * as Facebook from 'expo-facebook';
 import { db } from '../server/db';
 
+import { Constants } from 'expo';
+import * as Location from 'expo-location'
+import * as Permissions from 'expo-permissions'
+
 import {Platform} from 'react-native'
 
 // Use this to fix bug with Expo and firebase
@@ -16,7 +20,6 @@ if (Platform.OS !== 'web') {
 }
 
 
-//firebase.initializeApp(firebaseConfig);
 
 export const initialState = {
   user: {
@@ -28,83 +31,44 @@ export const initialState = {
     email: '',
     password: '',
     walking: false,
-    loggedIn: false
+    loggedIn: false,
+    location: null,
+    error: null
   },
   dogs: [],
 };
 
-const fakeDogs = {
-  dogs:  [
-      {
-        id: '1',
-        name: 'Milly',
-        age: '6',
-        breed: 'Shih Tzu',
-        img: 'https://192.168.22.10:9999/milly.jpg'
-      },
-      {
-        id: '2',
-        name: 'Hailey',
-        age: '13',
-        breed: 'Shih Tzu/Lasa Apso',
-        img: 'https://cdn1.medicalnewstoday.com/content/images/articles/322/322868/golden-retriever-puppy.jpg'
-      },
-      {
-        id: '3',
-        name: 'Jasper',
-        age: '13',
-        breed: 'Labrador Retriever',
-        img: 'https://cdn1.medicalnewstoday.com/content/images/articles/322/322868/golden-retriever-puppy.jpg'
-      },
-      {
-        id: 4,
-        name: 'Charlie',
-        age: '4',
-        breed: 'Blue Healer',
-        img: 'https://cdn1.medicalnewstoday.com/content/images/articles/322/322868/golden-retriever-puppy.jpg'
-      }
-    ]
-  };
-
 const GOT_DOGS = 'GOT_DOGS';
 const SIGNED_UP = 'SIGNED_UP';
 const LOGGED_IN = 'LOGGED_IN';
+const WALKING = 'WALKING';
+const SWIPED_DOG = 'SWIPED_DOG';
 
 //action creator
 
 export const gotDogs = (dogs) => ({type: GOT_DOGS, dogs});
-export const signedUp = (email, password) =>({type: SIGNED_UP, email, password});
-export const loggedIn = (user) =>({type: LOGGED_IN, user});
+export const signedUp = (email, password) => ({type: SIGNED_UP, email, password});
+export const loggedIn = (user) => ({type: LOGGED_IN, user});
+export const areWalking =  (user, location) => ({type: WALKING, user, location});
+export const swipedDog = (dogs) => ({type: SWIPED_DOG, dogs});
 
 //thunks
 
-// export const getDogs = () => {
-//   return async (dispatch) => {
-//    try {
-//       let dogData = await axios.get('http://192.168.22.10:9999/api/dogs');
-//       console.log(dogData)
-//       dispatch(gotDogs(initialState.dogs.all))
-//     } catch (err) {
-//      console.error(err);
-//    }
-//   };
-// };
 
 export const getDogs = () => {
   return async (dispatch) => {
     try {
-      const docRef = db.collection('dogs');
+      const docRef = await db.collection('dogs');
       const query = await docRef.where('walking', '==', true);
       let dogs = [];
-      query.get().then(function(querySnapshot){
+        query.get().then(function(querySnapshot){
         querySnapshot.forEach(function (doc){
           let dog = doc.data();
           dog.id = doc.id;
           dogs.push(dog);
         })
-        console.log(dogs);
         dispatch(gotDogs(dogs));
-      })
+      }).catch(error => console.error(error))
     } catch (error) {
       console.error(error);
     }
@@ -123,15 +87,47 @@ export const signUp = (userData, password) => {
 };
 };
 
-// export const signUp = (email, password) => {
-//   return (dispatch) => {
-//     try {
-//     dispatch(signedUp(email, password));
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-// };
+const _getLocationAsync = async () => {
+  try {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+     console.error(
+        'Permission to access location was denied',
+      );
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    return location;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const goWalking = (user) => {
+  return async (dispatch) => {
+    try {
+
+      if (Platform.OS === 'android' && !Constants.isDevice) {
+        console.error('Oops, this will not work on Sketch in an Android emulator. Try it on your device!');
+      } else {
+        location = await _getLocationAsync();
+        walking = true;
+        const docRef = db.collection('dogs').doc(user.id);
+        docRef.get().then(function(doc) {
+          if (doc.exists) {
+            docRef.update({ location: location,
+            walking: true });
+          } else {
+            console.error('no user doc found');
+          }
+        }).catch(error => console.error(error));
+        dispatch(areWalking(user, location))
+      }
+    } catch (err) {
+      console.error(err);
+    }
+}
+}
+
 
 export const login = (email, password) => {
   return async (dispatch) => {
@@ -140,12 +136,16 @@ export const login = (email, password) => {
     const docRef = db.collection('dogs').doc(user.uid);
     docRef.get().then(function(doc) {
       if (doc.exists) {
+        docRef.update({
+          walking: false });
         let data = doc.data();
+        data.id = doc.id;
+        data.walking = false;
         dispatch(loggedIn(data));
       } else {
         console.log('document does not exist')
       }
-    });
+    }).catch(err => console.error(err));
   } catch (error) {
     console.error(error);
   }
@@ -160,7 +160,6 @@ export const loginWithFacebook = () => {
         { permissions: ['public_profile'] }
         );
       if (type === 'success') {
-        alert('success');
         const credential = await firebase.auth.FacebookAuthProvider.credential(token);
 
         firebase
@@ -170,12 +169,16 @@ export const loginWithFacebook = () => {
           const docRef = db.collection('dogs').doc(user.uid);
           docRef.get().then(function(doc) {
             if (doc.exists) {
+              docRef.update({
+                walking: false });
               let data = doc.data();
+              data.id = user.uid;
+              data.walking = false;
               dispatch(loggedIn(data));
             } else {
               db.collection('dogs').doc(user.uid).set({name: 'facebook test'});
             }
-          });
+          }).catch(error => console.error(error));
 
 
           if (user) dispatch(loggedIn(user));
@@ -192,6 +195,18 @@ export const loginWithFacebook = () => {
 const reducer = (state = initialState, action) => {
   const newState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
+    case SWIPED_DOG: {
+      console.log('made it to reducer')
+      action.dogs.shift();
+      console.log(action.dogs);
+      newState.dogs = action.dogs;
+      return newState;
+    }
+    case WALKING: {
+      newState.user.walking = true;
+      newState.user.location = action.location;
+      return newState;
+    }
     case GOT_DOGS:
       newState.dogs = action.dogs;
       return newState;
@@ -201,12 +216,11 @@ const reducer = (state = initialState, action) => {
       return newState;
       case LOGGED_IN:
           newState.user = action.user;
-          newState.loggedIn = true;
+          newState.user.loggedIn = true;
           return newState;
     default:
-      break;
+      return state;
   }
-  return state;
 };
 
 const store = createStore(  //creates store and attaches middleware (logger and devtools)

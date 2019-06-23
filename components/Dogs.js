@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,9 +9,10 @@ import {
   Dimensions //gets dimensions of device
 } from 'react-native';
 
-import { Card, ListItem, Button, Icon } from 'react-native-elements';
+import { Card, ListItem, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { getDogs } from '../store/index';
+import { Button } from 'native-base';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,8 +20,8 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: width -20,
-    height: height * 0.6,
-    top: (height * 0.3) / 2,
+    height: height * 0.65,
+    top: (height * 0.1) / 2,
     overflow: 'hidden',
     backgroundColor: 'darkorchid',
     margin: 10,
@@ -29,65 +30,58 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   pic: {
-    height: height * 0.5,
+    height: height * 0.4,
     width: width - 20
   },
 });
 
 
-class Dogs extends Component {
+function Dogs (props) {
+  const pan = new Animated.ValueXY();
 
-  // componentDidMount () {
-  //   this.props.getDogs();
-  // }
+  const cardPanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      { dx: pan.x, dy: pan.y }, //takes an array, dx is distance traveled
+    ]),
+    onPanResponderRelease: (event, gesture) => {
+      const threshold = Math.abs(gesture.dx);
+      const direction = threshold / gesture.dx
 
-  componentWillMount() {
-    this.pan = new Animated.ValueXY();
-    this.cardPanResponder = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: Animated.event([
-        null,
-        { dx: this.pan.x, dy: this.pan.y }, //takes an array, dx is distance traveled
-      ]),
-      onPanResponderRelease: (event, gesture) => {
-        const threshold = Math.abs(gesture.dx);
-        const direction = threshold / gesture.dx
+      if (threshold > 120) {
+        // if swipe is greater than threshold, remove card
+        Animated.decay(pan, {
+          velocity: {x: 3* direction, y:0},
+          deceleration: 0.995,
+        }).start(props.onSwipeOff);
+      } else {
+        Animated.spring(pan, { //spring back animation
+          toValue: {x: 0, y: 0}, //spring back to center
+          friction: 5 //friction of animation higher is more friction
+        }).start(); //starts the animation
+      }
+    },
+  });
+  useEffect(() => {
+}, []);
 
-        if (threshold > 120) {
-          // if swipe is greater than threshold, remove card
-          Animated.decay(this.pan, {
-            velocity: {x: 3* direction, y:0},
-            deceleration: 0.995,
-          }).start();
-        } else {
-          Animated.spring(this.pan, { //spring back animation
-            toValue: {x: 0, y: 0}, //spring back to center
-            friction: 5 //friction of animation higher is more friction
-          }).start(); //starts the animation
-        }
-      },
-    });
-  }
-
-
-
-  render() {
-    const rotateCard = this.pan.x.interpolate({  //this sets card rotation on move
+    const rotateCard = pan.x.interpolate({  //this sets card rotation on move
       inputRange: [-200, 0, 200],
       outputRange: ['-10deg', '0deg', '10deg']
     });
 
     const animatedStyle = {
       transform: [
-        {translateX: this.pan.x},
-        {translateY: this.pan.y},
+        {translateX: pan.x},
+        {translateY: pan.y},
         {rotate: rotateCard}
       ]
     };
-    const { name, age, breed, imgUrl } = this.props.profile;
+    const { name, age, breed, imgUrl } = props.profile;
     return (
       <Animated.View
-        {...this.cardPanResponder.panHandlers}
+        {...cardPanResponder.panHandlers}
         style={[animatedStyle]}
       >
         <Card
@@ -98,12 +92,19 @@ class Dogs extends Component {
           imageStyle={styles.pic}
           >
           <Text style={{marginBottom: 10, color: 'white'}}>
-          {`${this.props.profile.breed}, ${this.props.profile.age} years old`}
+          {`${props.profile.breed}, ${props.profile.age} years old`}
           </Text>
+          <Button
+           style = {{marginTop: 10}}
+           full
+           rounded
+           primary
+          >
+            <Text>Walk with {props.profile.name}</Text>
+          </Button>
         </Card>
       </Animated.View>
     );
-  }
 }
 
 //  const mapStateToProps = (state) => {

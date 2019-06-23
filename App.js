@@ -2,7 +2,7 @@ import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
 import React, { useState } from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import store from './store';
 import {Provider} from 'react-redux';
@@ -22,10 +22,13 @@ export default function App(props) {
     );
   } else {
     return (
+
       <Provider store={store}>
       <View style={styles.container}>
+
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <AppNavigator />
+
       </View>
       </Provider>
     );

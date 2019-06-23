@@ -1,35 +1,72 @@
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
+  // Image,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  // TouchableOpacity,
   View,
+  ImageBackground
 } from 'react-native';
 import {
   Container, Content, Header, Form, Input, Item, Button, Label
 } from 'native-base';
 
 import { connect } from 'react-redux';
-import { getDogs } from '../store/index';
-import { MonoText } from '../components/StyledText';
-import Auth from '../components/auth';
+import { getDogs, goWalking } from '../store/index';
+// import { MonoText } from '../components/StyledText';
+// import Auth from '../components/auth';
 import Dogs from '../components/Dogs';
+
+
+function distance(lat1, lon1, lat2, lon2, unit) {
+  const radlat1 = Math.PI * lat1/180
+  const radlat2 = Math.PI * lat2/180
+  const radlon1 = Math.PI * lon1/180
+  const radlon2 = Math.PI * lon2/180
+  const theta = lon1-lon2
+  const radtheta = Math.PI * theta/180
+  let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+  dist = Math.acos(dist)
+  dist = dist * 180/Math.PI
+  dist = dist * 60 * 1.1515
+  if (unit=="K") { dist = dist * 1.609344 }
+  if (unit=="N") { dist = dist * 0.8684 }
+  return dist
+}
 
 function HomeScreen(props) {
   useEffect(() => {
     props.getDogs();
   }, []);
+  const [idx, setIdx] = useState(0);
+  console.log('idx', idx)
 
-//const [dogs, setDogs] = useState(props.dogs);
-console.log(props.dogs);
+  const rotate = (idx) => {
+    idx = idx + 1;
+    if (idx >= props.dogs
+      .filter(el => distance(
+        props.user.location.coords.latitude,
+        props.user.location.coords.longitude,
+        el.location.coords.latitude,
+        el.location.coords.longitude
+      ) < 1)
+      .length) {idx = 0;}
+    setIdx(idx);
+    console.log('idx:', idx)
+    console.log('length', props.dogs.length)
+  };
 
   return (
     <Container>
     <View style={styles.container}>
+    <ImageBackground
+    source={{uri: 'https://aboutreact.com/wp-content/uploads/2018/08/8f17765c523f5b75f3dc60ae145e9df7.jpg'}}
+    style={{width: '100%', height: '100%', flex: 1}}
+    imageStyle={{resizeMode: 'stretch'}}
+ >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}>
@@ -43,20 +80,52 @@ console.log(props.dogs);
 
         </View>
 
-        {/* <Button
+       {props.user.loggedIn ? ( <Button
         style = {{marginTop: 10}}
         full
         rounded
         primary
-        onPress = {() => {props.getDogs()}}
+        onPress = {() => {
+          setIdx(0)
+          props.getDogs()
+          props.goWalking(props.user)
+        }}
       >
-        <Text>Get Dogs</Text>\
-      </Button> */}
-      {props.dogs.reverse().map((el) => {
+        <Text>Go Walking</Text>
+        </Button>
+       ) : (
+         <Text> Please Log In or Sign Up First, then </Text>
+       )
+       }
+      {props.user.walking ?
+        (
+          props.dogs
+          .filter(el => distance(
+            props.user.location.coords.latitude,
+            props.user.location.coords.longitude,
+            el.location.coords.latitude,
+            el.location.coords.longitude
+          ) < 1)
+          .slice(idx, idx + 3)
+          .reverse()
+          .map((el) => {
         return (
-          <Dogs key={el.id} profile={el} />
+          <Dogs
+          key={el.id}
+          profile={el}
+          onSwipeOff={() => {
+            rotate(idx)
+        }}
+          />
         );
-      })}
+      })
+      ) : (
+
+          <Text>Go Walking to See Dogs</Text>
+
+      )
+
+      }
       </ScrollView>
 
       {/* <View style={styles.tabBarInfoContainer}>
@@ -71,6 +140,7 @@ console.log(props.dogs);
           </MonoText>
         </View>
       </View> */}
+    </ImageBackground>
     </View>
     </Container>
   );
@@ -82,13 +152,13 @@ HomeScreen.navigationOptions = {
 
 const mapStateToProps = (state) => {
   let dogs = state.dogs;
-  let email = state.email;
-  let password = state.password;
-  return { dogs, email, password };
+  let user = state.user;
+
+  return { dogs, user };
 }
 
 const mapDispatchToProps = dispatch => {
-  return { getDogs: () => dispatch(getDogs()) };
+  return { getDogs: () => dispatch(getDogs()), goWalking: (user) => dispatch(goWalking(user)) };
 };
 
 
