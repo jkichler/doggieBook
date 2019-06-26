@@ -44,6 +44,13 @@ function HomeScreen(props) {
   const [idx, setIdx] = useState(0);
   console.log('idx', idx)
 
+  // const rotate = (idx) => {
+  //   idx = idx + 1;
+  //   setIdx(idx);
+  //   console.log('idx:', idx)
+  //   console.log('length', props.dogs.length)
+  // };
+
   const rotate = (idx) => {
     idx = idx + 1;
     if (idx >= props.dogs
@@ -63,7 +70,7 @@ function HomeScreen(props) {
     <Container>
     <View style={styles.container}>
     <ImageBackground
-    source={{uri: 'https://aboutreact.com/wp-content/uploads/2018/08/8f17765c523f5b75f3dc60ae145e9df7.jpg'}}
+    source={{uri: 'https://firebasestorage.googleapis.com/v0/b/doggiebook-3d1a6.appspot.com/o/7175.jpg?alt=media&token=a4385bd5-ade0-43ee-a7ae-63c7fbcf65e1'}}
     style={{width: '100%', height: '100%', flex: 1}}
     imageStyle={{resizeMode: 'stretch'}}
  >
@@ -91,10 +98,14 @@ function HomeScreen(props) {
           props.goWalking(props.user)
         }}
       >
-        <Text>Go Walking</Text>
+        <Text
+        style={{color: 'white'}}
+        >Go Walking</Text>
         </Button>
        ) : (
-         <Text> Please Log In or Sign Up First, then </Text>
+         <Text
+         style={{color: 'white', textAlign: 'center', marginTop: "40%", fontSize: 17}}
+         > Please Log In or Sign Up </Text>
        )
        }
       {props.user.walking ?
@@ -121,7 +132,7 @@ function HomeScreen(props) {
       })
       ) : (
 
-          <Text>Go Walking to See Dogs</Text>
+          <Text></Text>
 
       )
 
@@ -200,7 +211,6 @@ const mapDispatchToProps = dispatch => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   developmentModeText: {
     marginBottom: 20,
@@ -240,8 +250,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
+    fontSize: 24,
+    color: 'white',
     lineHeight: 24,
     textAlign: 'center',
   },

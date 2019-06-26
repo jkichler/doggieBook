@@ -96,9 +96,9 @@ function Dogs (props) {
           </Text>
           <Button
            style = {{marginTop: 10}}
+           light
            full
            rounded
-           primary
           >
             <Text>Walk with {props.profile.name}</Text>
           </Button>

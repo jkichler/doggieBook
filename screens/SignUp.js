@@ -143,8 +143,8 @@ const mapDispatchToProps = dispatch => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     marginBottom: '30%',
+    opacity: 0.7
   },
   developmentModeText: {
     marginBottom: 20,

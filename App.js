@@ -24,12 +24,16 @@ export default function App(props) {
     return (
 
       <Provider store={store}>
-      <View style={styles.container}>
-
+        <View style={styles.container}>
+    <ImageBackground
+    source={{uri: 'https://firebasestorage.googleapis.com/v0/b/doggiebook-3d1a6.appspot.com/o/7175.jpg?alt=media&token=a4385bd5-ade0-43ee-a7ae-63c7fbcf65e1'}}
+    style={{width: '100%', height: '100%', flex: 1}}
+    imageStyle={{resizeMode: 'stretch'}}
+ >
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <AppNavigator />
-
-      </View>
+        </ImageBackground>
+        </View>
       </Provider>
     );
   }
@@ -64,6 +68,5 @@ function handleFinishLoading(setLoadingComplete) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
 });

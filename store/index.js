@@ -112,9 +112,9 @@ export const goWalking = (user) => {
         location = await _getLocationAsync();
         walking = true;
         const docRef = db.collection('dogs').doc(user.id);
-        docRef.get().then(function(doc) {
+        docRef.get().then(async function(doc) {
           if (doc.exists) {
-            docRef.update({ location: location,
+            await docRef.update({ location: location,
             walking: true });
           } else {
             console.error('no user doc found');

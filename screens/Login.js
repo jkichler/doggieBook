@@ -1,6 +1,6 @@
 /* eslint-disable semi */
 import React, {useEffect, useState}  from 'react';
-import { Text } from 'react-native';
+import { Text, ImageBackground } from 'react-native';
 import {
   Container, Content, Header, Form, Input, Item, Button, Label
 } from 'native-base';
@@ -17,18 +17,33 @@ const Login = (props) => {
   const [password, setPassword] = useState(props.password);
 
   return (
-    <Form>
-      <Item floatingLabel>
-        <Label>Email:</Label>
+    <ImageBackground
+    source={{uri: 'https://firebasestorage.googleapis.com/v0/b/doggiebook-3d1a6.appspot.com/o/7175.jpg?alt=media&token=a4385bd5-ade0-43ee-a7ae-63c7fbcf65e1'}}
+    style={{width: '100%', height: '100%', flex: 1}}
+    imageStyle={{resizeMode: 'stretch', opacity: 0.7}}
+ >
+    <Form
+    style={{color: 'black'}}
+    >
+      <Item floatingLabel
+      style={{color: 'black'}}
+      >
+        <Label
+        style={{color: 'black'}}
+        >Email:</Label>
         <Input
+        style={{color: 'black'}}
           autoCorrect={false}
           autoCapitalize="none"
           onChangeText={(mail) => setEmail(mail)}
           />
       </Item>
       <Item floatingLabel>
-        <Label>Password:</Label>
+        <Label
+        style={{color: 'black'}}
+        >Password:</Label>
         <Input
+        style={{color: 'black'}}
           secureTextEntry={true}
           autoCorrect={false}
           autoCapitalize="none"
@@ -39,7 +54,7 @@ const Login = (props) => {
         style = {{marginTop: 10}}
         full
         rounded
-        success
+        primary
         onPress = {() =>  {if (email === undefined) {
           alert('Please enter an email address')
         }  else
@@ -51,7 +66,9 @@ const Login = (props) => {
 
         }
       >
-        <Text>Login</Text>
+        <Text
+        style={{color: 'white'}}
+        >Login</Text>
       </Button>
 
       <Button
@@ -64,10 +81,13 @@ const Login = (props) => {
           props.navigation.navigate('Home')
         }}
       >
-        <Text>Login with Facebook</Text>
+        <Text
+        style={{color: 'white'}}
+        >Login with Facebook</Text>
       </Button>
 
     </Form>
+    </ImageBackground>
   )
 }
 
